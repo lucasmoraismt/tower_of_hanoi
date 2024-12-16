@@ -55,7 +55,7 @@ _start:
 
 ;Tower of Hanoi recursive function
 hanoi:
-  ;Save registers to preserve their values during recursion
+  ; Save registers to preserve their values during recursion
   push ebx
   push edx
   push ecx
@@ -63,16 +63,16 @@ hanoi:
   cmp cl, 1
   je .base_case
 
-  ;Recursive case: Move n-1 disks from source to auxiliary
+  ; Recursive case: Move n-1 disks from source to auxiliary
   dec cl
-  push edx         ;Save the entire edx register
-  mov dl, dh       ;Save the current dh value in dl
-  mov dh, bl       ;Swap dh and bl for recursion
+  push edx         ; Save the entire edx register
+  mov dl, dh       ; Save the current dh value in dl
+  mov dh, bl       ; Swap dh and bl for recursion
   call hanoi
-  pop edx          ;Restore edx register
+  pop edx          ; Restore edx register
   inc cl
 
-  ;Move nth disk directly from source to destination
+  ; Move nth disk directly from source to destination
   mov ecx, move_msg1
   call print_string
 
@@ -103,7 +103,7 @@ hanoi:
   pop edx          ; Restore edx register
   inc cl
 .base_case:
-  ;Handle single disk move
+  ; Handle single disk move
   mov ecx, move_msg1
   call print_string
 
@@ -125,26 +125,31 @@ hanoi:
   mov ecx, newline
   call print_char
 
-  ;Restore registers and return
+  ; Restore registers and return
   pop ecx
   pop edx
   pop ebx
   ret
 
 validate_input:
-  ;Check if the first character is between '1' and '9'
+  ;Check for valid range (1 to 99)
   mov al, [input_buffer]
-  cmp al, '1'
-  jl .invalid
+  cmp al, '0'
+  je .invalid ;Reject '00'
   cmp al, '9'
-  jg .invalid
+  jg .invalid ;Reject values greater than '9'
 
-  ;Check if the second character is between '0' and '9'
+  ;If a second digit exists, check its validity
   mov al, [input_buffer + 1]
+  cmp al, 0
+  je .valid ;It's a 1-digit number (valid)
+
+  ;Validate second digit (between '0' and '9')
   cmp al, '0'
   jl .invalid
   cmp al, '9'
   jg .invalid
+.valid:
   ret
 .invalid:
   mov ecx, invalid_input
@@ -152,9 +157,22 @@ validate_input:
   jmp _start
 
 string_to_int:
-  ;Convert string input to integer
+  ;Convert the first character
   mov al, [input_buffer]
   sub al, '0'
+  mov ah, 0
+  movzx eax, al
+
+  ;If there is a second character, process it
+  mov al, [input_buffer + 1]
+  cmp al, 0   ;Null terminator?
+  je .done    ;If none, finish
+  sub al, '0'
+  imul eax, 10
+  movzx edx, al   ;Expand the 8-bit value in AL to 32 bits in EDX
+  add eax, edx    ;Add EDX (32 bits) to EAX
+
+.done:
   mov [num_disks], al
   ret
 
