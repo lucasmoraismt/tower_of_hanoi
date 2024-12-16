@@ -65,10 +65,11 @@ hanoi:
 
   ;Recursive case: Move n-1 disks from source to auxiliary
   dec cl
-  push dh
-  mov dh, bl
+  push edx         ;Save the entire edx register
+  mov dl, dh       ;Save the current dh value in dl
+  mov dh, bl       ;Swap dh and bl for recursion
   call hanoi
-  pop dh
+  pop edx          ;Restore edx register
   inc cl
 
   ;Move nth disk directly from source to destination
@@ -93,12 +94,13 @@ hanoi:
   mov ecx, newline
   call print_char
 
-  ;Recursive case: Move n-1 disks from auxiliary to destination
+  ; Recursive case: Move n-1 disks from auxiliary to destination
   dec cl
-  push dl
-  mov dl, dh
+  push edx         ; Save the entire edx register
+  mov dl, dh       ; Save dh value in dl
+  mov dh, bl       ; Swap dh and bl
   call hanoi
-  pop dl
+  pop edx          ; Restore edx register
   inc cl
 .base_case:
   ;Handle single disk move
@@ -148,7 +150,6 @@ validate_input:
   mov ecx, invalid_input
   call print_string
   jmp _start
-
 
 string_to_int:
   ;Convert string input to integer
